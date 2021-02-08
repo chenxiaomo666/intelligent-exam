@@ -1,4 +1,6 @@
 from sqlalchemy import or_
+from ..models import Subject
+from .. import db
 import requests
 import base64
 import json
@@ -133,7 +135,7 @@ def get_current_week():
 
     # 国庆放了一周假。。。  update 2020/10/15 23:24
     # return result_week, now_time.weekday()+1
-    return (result_week-1)**2, now_time.weekday()+1
+    return 2**(result_week-1), now_time.weekday()+1
 
 
 def jwc_post(week, weekday, period):
@@ -221,3 +223,11 @@ def get_empty_class_room():
 
     return all_, morning_, afternoon_, evening_, one_two_, three_four_, five_six_, seven_eight_, nine_ten_
 
+
+
+# 修补一下数据库错误
+def func():
+    records = base_query(Subject).filter_by(index=17).all()
+    for record in records:
+        record.subject_type = 1
+    db.session.commit()

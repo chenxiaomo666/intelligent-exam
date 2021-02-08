@@ -3,7 +3,7 @@ from ..repositorys.props import auth, success, error, panic
 from ..models import Subject, UserAnswer, HistoryAnswer, User
 from .. import db
 from ..config import Config
-from ..services.tool import base_query
+from ..services.tool import base_query, func
 import requests
 import json
 import random
@@ -41,25 +41,34 @@ def subject_add():
 def subject_get():
     """
     data = {
-        "exam_number" : 2,
+        "exam_number" : 2021,
         "subject_index" : 14
     }
     """
-    
+    func()
     data = request.args
     
-    if data.get("exam_number") is None:
+    if data.get("exam_number") is None:   # 随机抽取一套题
         _subject = base_query(Subject).first()
         if _subject is not None:
             exist_exam_number = _subject.exist_exam_number
-            exam_number = random.randint(1, exist_exam_number)
+            exam_number = 2009 + random.randint(1, exist_exam_number)   # 2010-2021，exist_exam_number=12
             subject_index = 1
         else:
             # 数据库中没有题
             return error(reason="数据库中未存放题目")
     else:
-        exam_number = int(data.get("exam_number"))
-        subject_index = int(data.get("subject_index"))
+        try:
+            exam_number = int(data.get("exam_number"))
+            if exam_number<2010 or exam_number>2021:
+                return error()
+        except:
+            return error()
+        subject_index = 0   # 仅初始化，0无含义
+        if data.get("subject_index") is None:   # 代表是按照年份抽取
+            subject_index = 1
+        else:
+            subject_index = int(data.get("subject_index"))
 
     subject = base_query(Subject).filter_by(current_exam_number=exam_number, index=subject_index).first()
     if subject is None:
